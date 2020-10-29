@@ -1,35 +1,34 @@
 """
-aimall_utils.py v0.0
-L. J. Duarte, XXXXXXX, P. L. A. Popelier 
+gaussian_utils.py v0.1
+L. J. Duarte, F.Falcioni, P. L. A. Popelier
 
 Library with function to submit job to Gaussian and get properties values from output_files
 GAUSSIAN version: G09 / G16
-Check for updates at github.com/ljduarte
+Check for updates at https://github.com/FabioFalcioni/REG.py
 For details about the method, please see XXXXXXX
 
-Please, report bugs and issues to leo.j.duarte@hotmail.com.br
-coded by L. J. Duarte
+Please, report bugs and issues to fabioslefou@gmail.com
+coded by L. J. Duarte and F. Falcioni
 """
 
 import re
 
-"""
-###########################################################################################################
-FUNCTION: get_atom_list_wfn_g09
-          get atomic labels from g09 wfn file
-
-INPUT: wfn_file
-    wfn_file = Any wfn file of the desired PES
-           
-OUTPUT: atom_list
-    list of each atom label for all atoms in molecule 
-    
-ERROR:
-    "Atomic labels not found" : Atom list does not exist in wfn_file  
-###########################################################################################################
-"""
-
 def get_atom_list_wfn_g09(wfn_file):
+    """
+    ###########################################################################################################
+    FUNCTION: get_atom_list_wfn_g09
+              get atomic labels from g09 wfn file
+
+    INPUT: wfn_file
+        wfn_file = Any wfn file of the desired PES
+
+    OUTPUT: atom_list
+        list of each atom label for all atoms in molecule
+
+    ERROR:
+        "Atomic labels not found" : Atom list does not exist in wfn_file
+    ###########################################################################################################
+    """
     #INTERNAL VARIABLES:
     atom_list = []
     
@@ -50,23 +49,23 @@ def get_atom_list_wfn_g09(wfn_file):
     
     return atom_list
 
-"""
-###########################################################################################################
-FUNCTION: get_atom_list_wfx_g09
-          get atomic labels from g09 wfn file
-
-INPUT: wfn_file
-    wfx_file = Any double wavefunction file of the desired PES
-           
-OUTPUT: atom_list
-    list of each atom label for all atoms in molecule 
-    
-ERROR:
-    "Atomic labels not found" : Atom list does not exist in wfn_file  
-###########################################################################################################
-"""
 
 def get_atom_list_wfx_g09(wfx_file):
+    """
+    ###########################################################################################################
+    FUNCTION: get_atom_list_wfx_g09
+              get atomic labels from g09 wfn file
+
+    INPUT: wfn_file
+        wfx_file = Any double wavefunction file of the desired PES
+
+    OUTPUT: atom_list
+        list of each atom label for all atoms in molecule
+
+    ERROR:
+        "Atomic labels not found" : Atom list does not exist in wfn_file
+    ###########################################################################################################
+    """
     #INTERNAL VARIABLES:
     atom_list = []
     
@@ -93,23 +92,23 @@ def get_atom_list_wfx_g09(wfx_file):
     
     return atom_list
 
-"""
-###########################################################################################################
-FUNCTION: get_atom_list_wfn_g16
-          get atomic labels from g16 wfn file
-
-INPUT: wfn_file
-    wfn_file = Any wfn file of the desired PES
-           
-OUTPUT: atom_list
-    list of each atom label for all atoms in molecule 
-    
-ERROR:
-    "Atomic labels not found" : Atom list does not exist in wfn_file  
-###########################################################################################################
-"""
 
 def get_atom_list_wfn_g16(wfn_file):
+    """
+    ###########################################################################################################
+    FUNCTION: get_atom_list_wfn_g16
+              get atomic labels from g16 wfn file
+
+    INPUT: wfn_file
+        wfn_file = Any wfn file of the desired PES
+
+    OUTPUT: atom_list
+        list of each atom label for all atoms in molecule
+
+    ERROR:
+        "Atomic labels not found" : Atom list does not exist in wfn_file
+    ###########################################################################################################
+    """
     #INTERNAL VARIABLES:
     atom_list = []
     
@@ -129,6 +128,52 @@ def get_atom_list_wfn_g16(wfn_file):
             atom_list.append(split_line[0].lower()) # uppercase to lowercase
     
     return atom_list
+
+def get_control_coordinates_IRC_g16(output_file):
+    '''
+    ###########################################################################################################
+    FUNCTION: get_control-coordinates
+        get control coordinates from g16 output file
+    INPUT: output_file
+        output_file = Gaussian16 output file for Intrinsic Reaction Coordinate (IRC) scan.
+
+    OUTPUT: coordinates
+        list of the control coordinate of the IRC scan
+
+    ERROR:
+        "Control coordinates not found. Please, check that you have the g16 IRC output in the running folder"
+    ###########################################################################################################
+
+    '''
+    #INTERNAL VARIABLES
+    coordinates = []
+    start = 0
+    end = 0
+    found = False
+
+    #WORKING IN THE FILE
+    with open(output_file, 'r') as f:
+        lines = f.readlines()
+        # GET THE FIRST/LAST COORDINATE POSITION
+        for i in range(len(lines)):
+            if "Summary of reaction path following" in lines[i]:
+                start = i + 3
+                found = True
+
+        # ERRORS
+        if found is False:
+            raise ValueError("Control coordinates not found. Please, check that you have the g16 IRC output in the running folder")
+
+        for j in range(start, len(lines)):
+            if "---" in lines[j]:
+                end = j
+                break
+
+        # GET COORDINATES LIST
+        for line in lines[start: end]:
+            coordinates.append(float(line.split()[2]))
+
+    return coordinates
 
 def get_mp2_corr(file_list):
     energies = []
